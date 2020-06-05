@@ -5,7 +5,6 @@ class MinimaxPlayer:
         self.loc = None
         self.board = None
         self.directions = [(1, 0), (0, 1), (-1, 0), (0, -1)]
-        self.curr_player = 2
 
     def set_game_params(self, board):
         self.board = board
@@ -18,11 +17,20 @@ class MinimaxPlayer:
     def make_move(self, time_limit): #number of seconds to finish
         start_time = tm.time()
 
-        return ''
+        return (0,1)
+
+    # returns true is no moves possible
+    def g_check_win(self):
+        possible_next_locations = self.get_succ_moves()
+        if len(possible_next_locations) != 0:
+            return False, 0
+        else:
+            return True, 1
 
     def minimax(self, location, agent):
 
         #TODO check final state
+        game_finished, finish_state = self.g_check_win()
 
         # get successors
         children = self.get_succ_moves()
