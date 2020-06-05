@@ -26,9 +26,12 @@ class MinimaxPlayer:
 
         return ''
 
-
     def is_move_valid(self,loc):
-        return self.board.loc_is_in_board(loc) and self.board[loc[0],loc[1]] == 0
+
+        i = loc[0]
+        j = loc[1]
+
+        return 0 <= i < self.board.shape[0] and 0 <= j < self.board.shape[1] and self.board[loc[0],loc[1]] == 0
 
     def get_succ_moves(self):
         up = (self.loc[0] + 1, self.loc[1])
