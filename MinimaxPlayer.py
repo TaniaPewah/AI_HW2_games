@@ -20,7 +20,25 @@ class MinimaxPlayer:
 
     def make_move(self, time_limit): #number of seconds to finish
         start_time = tm.time()
+        d = 1
+        move, score = self.minimax(self.loc, 1)
+        if move == self.loc :
+            return (0, 0)
 
+        '''
+        last_iteration_time = tm.time() - ID_start_time
+        next_iteration_max_time = (, last_iteration_time)
+        time_until_now = tm.time() - start_time
+        While
+        time_until_now + next_iteration_max_time < time_limit:
+        8 += 1
+        iteration_start_time = tm.time()
+
+        move, = (s,)
+        last_iteration_time = tm.time() - iteration_start_time
+        next_iteration_max_time = (, last_iteration_time)
+        time_until_now = tm.time() - ID_start_time
+'''
         return (0,1)
 
     # returns true is no moves possible
@@ -40,10 +58,11 @@ class MinimaxPlayer:
                 return True, self.end_game_states["tie"]
 
     def minimax(self, location, agent):
+        chosen = self.loc
 
         game_finished, finish_state = self.g_check_win()
         if game_finished:
-            return finish_state
+            return chosen, finish_state
 
         # get successors
         children = self.get_succ_moves()
@@ -53,17 +72,21 @@ class MinimaxPlayer:
         if agent == 1:
             cur_max = -float('inf')
             for child in children:
-                val_of_move = self.minimax(child, 3 - agent)
+                _, val_of_move = self.minimax(child, 3 - agent)
+                if val_of_move > cur_max:
+                    chosen = child
                 cur_max = max(cur_max, val_of_move)
-            return cur_max
+            return chosen, cur_max
 
         # min player
         else:
             cur_min = float('inf')
             for child in children:
-                val_of_move = self.minimax(child, 3 - agent)
+                _, val_of_move = self.minimax(child, 3 - agent)
+                if val_of_move < cur_min:
+                    chosen = child
                 cur_min = max(cur_min, val_of_move)
-            return cur_min
+            return chosen, cur_min
 
     def is_move_valid(self, loc):
 
@@ -128,20 +151,7 @@ class MinimaxPlayer:
 '''
 
 '''
-        move, = (s,)
-        last_iteration_time = tm.time() - ID_start_time
-        next_iteration_max_time = (, last_iteration_time)
-        time_until_now = tm.time() - start_time
-        While
-        time_until_now + next_iteration_max_time < time_limit:
-        8 += 1
-        iteration_start_time = tm.time()
-
-        move, = (s,)
-        last_iteration_time = tm.time() - iteration_start_time
-        next_iteration_max_time = (, last_iteration_time)
-        time_until_now = tm.time() - ID_start_time
-        
+      
 '''
 
 '''def state_score(self, board, loc):
