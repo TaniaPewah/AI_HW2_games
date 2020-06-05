@@ -17,7 +17,34 @@ class MinimaxPlayer:
     def make_move(self, time_limit): #number of seconds to finish
         start_time = tm.time()
 
-        return move
+        #get successors
+        children = self.get_succ_moves()
+        print (children)
+        # check is game finished then return score
+
+        # check
+
+        return ''
+
+
+    def is_move_valid(self,loc):
+        return self.board.loc_is_in_board(loc) and self.board[loc[0],loc[1]] == 0
+
+    def get_succ_moves(self):
+        up = (self.loc[0] + 1, self.loc[1])
+        down = (self.loc[0] - 1, self.loc[1])
+        left = (self.loc[0], self.loc[1] - 1)
+        right = (self.loc[0], self.loc[1] + 1)
+
+        moves = []
+        moves += [up, down, left, right]
+
+        return list(filter(lambda move: self.is_move_valid(move), moves))
+
+    def set_rival_move(self, loc):
+        self.board[loc] = -1
+
+
 
 '''
         start = time.time()
@@ -70,14 +97,13 @@ class MinimaxPlayer:
         
 '''
 
-
-
-    def set_rival_move(self, loc):
-        return True
-
-
-    '''def state_score(self, board, loc):
-        return True
-
-    def count_ones(self, board):
+'''def state_score(self, board, loc):
         return True'''
+
+'''def count_ones(self, board):
+        counter = 0
+        for i, row in enumerate(board):
+            for j, val in enumerate(row):
+                if val == 1:
+                    counter += 1
+        return counter'''
