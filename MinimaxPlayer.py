@@ -6,7 +6,7 @@ class MinimaxPlayer:
         self.rival_loc = None
         self.board = None
         self.directions = [(1, 0), (0, 1), (-1, 0), (0, -1)]
-        self.end_game_states = {"victory": 1, "loose": -1,  "tie": 0, "continue_game": -2}
+        self.end_game_states = {"victory": 100, "loose": -100,  "tie": 0, "continue_game": -2}
 
 
     def set_game_params(self, board):
@@ -18,33 +18,43 @@ class MinimaxPlayer:
                 elif val == 2:
                     self.rival_loc = (i, j)
 
-    def make_move(self, time_limit): #number of seconds to finish
-        start_time = tm.time()
-        d = 1
-        move, score = self.minimax(self.loc, 1)
-        if move == self.loc :
-            return (0, 0)
+    def f(self, leaves, prev_time):
+        total_nodes = leaves * 1.5
+        time_for_node = prev_time / total_nodes
+        extra_leaves = leaves * 3
+        extra_time = extra_leaves * time_for_node
+        total_time = prev_time + extra_time
+        return total_time
 
-        '''
-        last_iteration_time = tm.time() - ID_start_time
-        next_iteration_max_time = (, last_iteration_time)
-        time_until_now = tm.time() - start_time
-        While
-        time_until_now + next_iteration_max_time < time_limit:
-        8 += 1
+    def make_move(self, time_limit): #number of seconds to finish
+        d = 1
         iteration_start_time = tm.time()
 
-        move, = (s,)
+        leaves = []
+        leaves[0] = 0
+        move, score, leaves = self.minimax(self.loc, 1, d, leaves)
+        if move == self.loc:
+            return (0,0)
+
         last_iteration_time = tm.time() - iteration_start_time
-        next_iteration_max_time = (, last_iteration_time)
-        time_until_now = tm.time() - ID_start_time
-'''
-        return (0,1)
+        next_evaluated_time = self.f(leaves[0], last_iteration_time)
+
+        time_limit -= last_iteration_time
+        while time_limit > next_evaluated_time:
+            d += 1
+            iteration_start_time = tm.time()
+            move, score, leaves = self.minimax(self.loc, 1, d, leaves)
+
+            last_iteration_time = tm.time() - iteration_start_time
+            time_limit -= last_iteration_time
+            next_evaluated_time = self.f(leaves[0], last_iteration_time)
+
+        return move
 
     # returns true is no moves possible
     def g_check_win(self):
-        possible_next_locations_me = self.get_succ_moves(1)
-        possible_next_locations_rival = self.get_succ_moves(2)
+        possible_next_locations_me = self.get_succ_moves(self.loc)
+        possible_next_locations_rival = self.get_succ_moves(self.rival_loc)
         if len(possible_next_locations_me) != 0:
             if len(possible_next_locations_rival) == 0:
                 return True, self.end_game_states["win"]
@@ -57,16 +67,31 @@ class MinimaxPlayer:
                 #TODO check who is the starting player using tile counting
                 return True, self.end_game_states["tie"]
 
-    def minimax(self, location, agent):
+    def heuristic(self, player1_loc, player2_loc):
+        return 0
+
+    def minimax(self, location, agent, depth, leaves):
         chosen = self.loc
 
+        # checking end of game, it is a leaf
         game_finished, finish_state = self.g_check_win()
         if game_finished:
+            leaves[0] += 1
             return chosen, finish_state
 
+        # if reached depth limit - update leaves and return the heuristic score and move
+        if depth == 0:
+            leaves[0] += 1
+            # gets board, and returns value of the current leaf
+            return self.heuristic( leaves,  )
+        depth -= 1
+
+        # TODO update the board according to chosen move
+        if agent == 1:
+            player1_loc = location
+
         # get successors
-        children = self.get_succ_moves()
-        print(children)
+        children = self.get_succ_moves(location)
 
         # max player
         if agent == 1:
@@ -96,12 +121,7 @@ class MinimaxPlayer:
                0 <= j < self.board.shape[1] and \
                self.board[loc[0],loc[1]] == 0
 
-    def get_succ_moves(self, agent):
-
-        if agent == 1:
-            location = self.loc
-        else:
-            location = self.rival_loc
+    def get_succ_moves(self, location):
 
         up = (location[0] + 1, location[1])
         down = (location[0] - 1, location[1])
