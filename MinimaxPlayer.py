@@ -3,8 +3,11 @@ import time as tm
 class MinimaxPlayer:
     def __init__(self):
         self.loc = None
+        self.rival_loc = None
         self.board = None
         self.directions = [(1, 0), (0, 1), (-1, 0), (0, -1)]
+        self.end_game_states = {"victory": 1, "loose": -1,  "tie": 0, "continue_game": -2}
+
 
     def set_game_params(self, board):
         self.board = board
@@ -12,7 +15,8 @@ class MinimaxPlayer:
             for j, val in enumerate(row):
                 if val == 1:
                     self.loc = (i, j)
-                    break
+                elif val == 2:
+                    self.rival_loc = (i, j)
 
     def make_move(self, time_limit): #number of seconds to finish
         start_time = tm.time()
@@ -21,16 +25,25 @@ class MinimaxPlayer:
 
     # returns true is no moves possible
     def g_check_win(self):
-        possible_next_locations = self.get_succ_moves()
-        if len(possible_next_locations) != 0:
-            return False, 0
+        possible_next_locations_me = self.get_succ_moves(1)
+        possible_next_locations_rival = self.get_succ_moves(2)
+        if len(possible_next_locations_me) != 0:
+            if len(possible_next_locations_rival) == 0:
+                return True, self.end_game_states["win"]
+            else:
+                return False, self.end_game_states["continue_game"]
         else:
-            return True, 1
+            if len(possible_next_locations_rival) != 0:
+                return True, self.end_game_states["loose"]
+            else:
+                #TODO check who is the starting player using tile counting
+                return True, self.end_game_states["tie"]
 
     def minimax(self, location, agent):
 
-        #TODO check final state
         game_finished, finish_state = self.g_check_win()
+        if game_finished:
+            return finish_state
 
         # get successors
         children = self.get_succ_moves()
@@ -52,8 +65,7 @@ class MinimaxPlayer:
                 cur_min = max(cur_min, val_of_move)
             return cur_min
 
-
-    def is_move_valid(self,loc):
+    def is_move_valid(self, loc):
 
         i = loc[0]
         j = loc[1]
@@ -61,11 +73,17 @@ class MinimaxPlayer:
                0 <= j < self.board.shape[1] and \
                self.board[loc[0],loc[1]] == 0
 
-    def get_succ_moves(self):
-        up = (self.loc[0] + 1, self.loc[1])
-        down = (self.loc[0] - 1, self.loc[1])
-        left = (self.loc[0], self.loc[1] - 1)
-        right = (self.loc[0], self.loc[1] + 1)
+    def get_succ_moves(self, agent):
+
+        if agent == 1:
+            location = self.loc
+        else:
+            location = self.rival_loc
+
+        up = (location[0] + 1, location[1])
+        down = (location[0] - 1, location[1])
+        left = (location[0], location[1] - 1)
+        right = (location[0], location[1] + 1)
 
         moves = []
         moves += [up, down, left, right]
@@ -74,8 +92,6 @@ class MinimaxPlayer:
 
     def set_rival_move(self, loc):
         self.board[loc] = -1
-
-
 
 '''
         start = time.time()
