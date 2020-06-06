@@ -102,7 +102,7 @@ class LiveAnimatedGame:
             self.players[1 - player_index].set_rival_move(loc)
             self.game.switch_players()
         else:
-            # print('Agent', player_index + 1, 'moved to', loc)
+            print('Agent', player_index + 1, 'moved to', loc)
             assert self.game.check_move(loc), 'illegal move'
             self.players[1 - player_index].set_rival_move(loc)
         return self.live_animation.do_animation_func_staff_with_pos(loc)

@@ -15,6 +15,7 @@ class BoardManager:
                            "down": (-1, 0),
                            "left": (0, -1)}
         self.end_game_states = {"victory": 100, "loose": -100, "tie": 0, "continue_game": -2}
+        self.direction = None
 
     def set_game(self):
         for i, row in enumerate(self.map):
@@ -26,6 +27,7 @@ class BoardManager:
 
     def update_board(self, action, agent, direction):
         rival = self.rival_loc
+
         if action == 1:
             if agent == 1:
                 self.map[self.my_loc] = -1
@@ -59,7 +61,7 @@ class BoardManager:
         right = add(location, self.directions["right"])
 
         moves = {"up": up, "down": down, "left": left, "right": right}
-        legal_moves = list(filter(lambda move: self.is_move_valid(move), moves.values()))
+        legal_moves = list(filter(lambda move: self.is_move_valid(move) == True, moves.values()))
         legal_directions = []
 
         for key, value in moves.items():

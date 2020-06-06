@@ -35,7 +35,8 @@ class MinimaxPlayer:
         next_evaluated_time = self.f(last_iteration_time)
 
         time_limit -= last_iteration_time
-        while time_limit > next_evaluated_time:
+        #while time_limit > next_evaluated_time:
+        while d < 3:
             d += 1
             iteration_start_time = tm.time()
             move, score = self.minimax(1, d)
@@ -44,6 +45,7 @@ class MinimaxPlayer:
             time_limit -= last_iteration_time
             next_evaluated_time = self.f(last_iteration_time)
 
+        self.board_manager.my_loc = add(self.board_manager.my_loc, move)
         return move
 
 
@@ -63,7 +65,7 @@ class MinimaxPlayer:
             # gets board, and returns value of the current leaf
             evaluated_solution = self.board_manager.heuristic()
             return chosen, evaluated_solution
-        depth -= 1
+        #depth -= 1
 
         # chosen = self.loc
         # get successors TODO return possible directions instead of locations
@@ -73,8 +75,9 @@ class MinimaxPlayer:
         if agent == 1:
             cur_max = -float('inf')
             for child in children:
+                self.board_manager.direction = child
                 self.board_manager.update_board(1, agent, child) # 1 = step into
-                _, val_of_move = self.minimax(3 - agent, depth)
+                _, val_of_move = self.minimax(3 - agent, depth - 1)
                 self.board_manager.update_board(-1, agent, child) # -1 = step out
                 if val_of_move > cur_max:
                     chosen = child
@@ -85,8 +88,9 @@ class MinimaxPlayer:
         else:
             cur_min = float('inf')
             for child in children:
+                self.board_manager.direction = child
                 self.board_manager.update_board(1, agent, child) # 1 = step into
-                _, val_of_move = self.minimax(3 - agent, depth)
+                _, val_of_move = self.minimax(3 - agent, depth - 1)
                 self.board_manager.update_board(-1, agent, child)
                 if val_of_move < cur_min:
                     chosen = child
