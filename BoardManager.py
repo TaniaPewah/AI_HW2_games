@@ -36,7 +36,7 @@ class BoardManager:
                 self.rival_loc = add(self.rival_loc, direction)
                 self.map[self.rival_loc] = 2
         elif action == -1:
-            reverse_direction = -1 * direction
+            reverse_direction = (-1 * direction[0], -1 * direction[1])
             if agent == 1:
                 self.map[self.my_loc] = 0
                 self.my_loc = add(self.my_loc, reverse_direction)
@@ -59,7 +59,7 @@ class BoardManager:
         right = add(location, self.directions["right"])
 
         moves = {"up": up, "down": down, "left": left, "right": right}
-        legal_moves = list(moves.values())
+        legal_moves = list(filter(lambda move: self.is_move_valid(move), moves.values()))
         legal_directions = []
 
         for key, value in moves.items():
@@ -68,24 +68,20 @@ class BoardManager:
 
         return legal_directions
 
-   def is_move_valid(self, new_loc):
+    def is_move_valid(self, new_loc):
 
         i = new_loc[0]
         j = new_loc[1]
-        # return self.map.shape[0] > i >= 0 == self.map[new_loc] and \
-        #        0 <= j < self.map.shape[1]
-        return 0 <= i < self.map.shape[0] and \
-               0 <= j < self.map.shape[1] and \
-               self.map[new_loc] == 0
 
-        # returns true is no moves possible
+        return 0 <= i and i < self.map.shape[0] and 0 <= j and j < self.map.shape[1] and self.map[i][j] == 0
+
 
     def g_check_win(self, agent):
         possible_next_locations_me = self.get_succ_moves(agent)
         possible_next_locations_rival = self.get_succ_moves(3 - agent)
         if len(possible_next_locations_me) != 0:
             if len(possible_next_locations_rival) == 0:
-                return True, self.end_game_states["win"]
+                return True, self.end_game_states["victory"]
             else:
                 return False, self.end_game_states["continue_game"]
         else:
@@ -95,8 +91,18 @@ class BoardManager:
                 # TODO check who is the starting player using tile counting
                 return True, self.end_game_states["tie"]
 
+    def heuristic(self):
+        # TODO refine the heuristic using these:
+        # rival distance to our location using white tiles using BFS?
+        # board state: num of white tiles around me
+        # use self.leaves
 
-    def set_rival_loc(self, loc) :
+        possible_next_me = len(self.get_succ_moves(1))
+        possible_next_rival = len(self.get_succ_moves(2))
+
+        return possible_next_me - possible_next_rival
+
+    def set_rival_loc(self, loc):
         self.map[self.rival_loc] = -1
         self.rival_loc = loc
         self.map[loc] = 2
