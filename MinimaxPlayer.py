@@ -18,6 +18,7 @@ class MinimaxPlayer:
                 elif val == 2:
                     self.rival_loc = (i, j)
 
+    # TODO maybe not use f and use real time threshold instead
     def f(self, leaves, prev_time):
         total_nodes = leaves * 1.5
         time_for_node = prev_time / total_nodes
@@ -30,9 +31,8 @@ class MinimaxPlayer:
         d = 1
         iteration_start_time = tm.time()
 
-        leaves = []
-        leaves[0] = 0
-        move, score, leaves = self.minimax(self.loc, 1, d, leaves)
+        leaves = [0]
+        move, score = self.minimax(self.loc, 1, d, leaves)
         if move == self.loc:
             return (0,0)
 
@@ -43,13 +43,13 @@ class MinimaxPlayer:
         while time_limit > next_evaluated_time:
             d += 1
             iteration_start_time = tm.time()
-            move, score, leaves = self.minimax(self.loc, 1, d, leaves)
+            move, score = self.minimax(self.loc, 1, d, leaves)
 
             last_iteration_time = tm.time() - iteration_start_time
             time_limit -= last_iteration_time
             next_evaluated_time = self.f(leaves[0], last_iteration_time)
 
-        return move
+        return move - self.loc
 
     # returns true is no moves possible
     def g_check_win(self):
@@ -67,10 +67,46 @@ class MinimaxPlayer:
                 #TODO check who is the starting player using tile counting
                 return True, self.end_game_states["tie"]
 
-    def heuristic(self, player1_loc, player2_loc):
-        return 0
+    def heuristic(self, leaves):
+        # TODO refine the heuristic using these:
+        # rival distance to our location using white tiles using BFS?
+        # board state: num of white tiles around me
+
+        possible_next_me = len(self.get_succ_moves(self.loc)) # 3
+        possible_next_rival = len(self.get_succ_moves(self.rival_loc)) # 2
+
+        return possible_next_me - possible_next_rival
+
+    def update_board(self, action, agent, location):
+        # TODO: build board manager
+        # TODO use directions instead of locations, then no need to send chosen (parent location)
+        # in order to revert
+
+        rival = self.rival_loc
+        if action == 1:
+            if agent == 1:
+                self.board[self.loc[0]][self.loc[1]] = -1
+                self.loc = location
+                self.board[self.loc[0]][self.loc[1]] = 1
+            else:
+                self.board[rival[0]][rival[1]] = -1
+                self.rival_loc = location
+                self.board[rival[0]][rival[1]] = 2
+        elif action == -1:
+            if agent == 1:
+                self.board[self.loc[0]][self.loc[1]] = 1
+                self.loc = location
+                self.board[location[0]][location[1]] = 0
+            else:
+                self.board[rival[0]][rival[1]] = 2
+                self.rival_loc = location
+                self.board[self.rival_loc[0]][self.rival_loc[1]] = 0
 
     def minimax(self, location, agent, depth, leaves):
+
+        # TODO update the board according to chosen move
+        self.update_board(1, agent, location)
+
         chosen = self.loc
 
         # checking end of game, it is a leaf
@@ -83,12 +119,8 @@ class MinimaxPlayer:
         if depth == 0:
             leaves[0] += 1
             # gets board, and returns value of the current leaf
-            return self.heuristic( leaves,  )
+            return (0,0), self.heuristic(leaves)
         depth -= 1
-
-        # TODO update the board according to chosen move
-        if agent == 1:
-            player1_loc = location
 
         # get successors
         children = self.get_succ_moves(location)
@@ -97,9 +129,12 @@ class MinimaxPlayer:
         if agent == 1:
             cur_max = -float('inf')
             for child in children:
-                _, val_of_move = self.minimax(child, 3 - agent)
+                _, val_of_move = self.minimax(child, 3 - agent, depth, leaves)
+                # TODO check if chosen not changing
+                self.update_board(-1, agent, chosen)
                 if val_of_move > cur_max:
                     chosen = child
+
                 cur_max = max(cur_max, val_of_move)
             return chosen, cur_max
 
@@ -107,7 +142,8 @@ class MinimaxPlayer:
         else:
             cur_min = float('inf')
             for child in children:
-                _, val_of_move = self.minimax(child, 3 - agent)
+                _, val_of_move = self.minimax(child, 3 - agent, depth, leaves)
+                self.update_board(-1, agent, chosen)
                 if val_of_move < cur_min:
                     chosen = child
                 cur_min = max(cur_min, val_of_move)
