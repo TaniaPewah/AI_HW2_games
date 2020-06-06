@@ -35,8 +35,7 @@ class MinimaxPlayer:
         next_evaluated_time = self.f(last_iteration_time)
 
         time_limit -= last_iteration_time
-        #while time_limit > next_evaluated_time:
-        while d < 3:
+        while time_limit > next_evaluated_time:
             d += 1
             iteration_start_time = tm.time()
             move, score = self.minimax(1, d)
@@ -47,7 +46,6 @@ class MinimaxPlayer:
 
         self.board_manager.my_loc = add(self.board_manager.my_loc, move)
         return move
-
 
     def minimax(self, agent, depth):
 
