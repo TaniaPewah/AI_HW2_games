@@ -59,12 +59,12 @@ class BoardManager:
         right = add(location, self.directions["right"])
 
         moves = {"up": up, "down": down, "left": left, "right": right}
-        legal_moves = list(filter(lambda move: self.is_move_valid(move), moves.values()))
-
+        legal_moves = list(moves.values())
         legal_directions = []
-        for move in legal_moves:
-            if move in moves.keys():
-                legal_directions += moves[move].value()
+
+        for key, value in moves.items():
+            if value in legal_moves:
+                legal_directions += [(self.directions[key])]
 
         return legal_directions
 
