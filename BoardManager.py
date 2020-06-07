@@ -1,6 +1,3 @@
-# TODO use directions instead of locations,
-
-
 def add(a, b):
     return tuple(map(sum, zip(a, b)))
 
@@ -108,3 +105,12 @@ class BoardManager:
         self.map[self.rival_loc] = -1
         self.rival_loc = loc
         self.map[loc] = 2
+
+    # TODO maybe not use f and use real time threshold instead
+    def f(self, prev_time, leaves):
+        total_nodes = leaves * 1.5
+        time_for_node = prev_time / total_nodes
+        extra_leaves = leaves * 3
+        extra_time = extra_leaves * time_for_node
+        total_time = prev_time + extra_time
+        return total_time
