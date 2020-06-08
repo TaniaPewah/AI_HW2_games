@@ -10,6 +10,8 @@ class OrderedAlphaBetaPlayer:
         self.leaves = 0
         self.alpha = float("-inf")
         self.beta = float("inf")
+        self.immediate_children = []
+        self.d = None
 
     def set_game_params(self, board):
         self.board_manager = BoardManager(board)
@@ -26,10 +28,10 @@ class OrderedAlphaBetaPlayer:
 
     def make_move(self, time_limit): #number of seconds to finish
         # TODO take care of time calculation
-        d = 1
+        self.d = 1
         iteration_start_time = tm.time()
         start = tm.time() #debug
-        move, score = self.minimax(1, d)
+        move, score = self.minimax(1, self.d)
         if move == (0, 0):
             return (0, 0)
 
@@ -39,9 +41,11 @@ class OrderedAlphaBetaPlayer:
         time_limit -= last_iteration_time
         while time_limit > next_evaluated_time:
         #while d < 15:
-            d += 1
+            self.d += 1
+            # for every d save the scores for all children of that location
             iteration_start_time = tm.time()
-            move, score = self.minimax(1, d)
+            sorted(self.immediate_children, key=lambda child: child[0], reverse=True)
+            move, score = self.minimax(1, self.d)
 
             last_iteration_time = tm.time() - iteration_start_time
             time_limit -= last_iteration_time
@@ -51,7 +55,7 @@ class OrderedAlphaBetaPlayer:
         print("alphabeta~~~~~~~~")
         print("time: " + str(tm.time() - start))
         print("leaves" + str(self.leaves))
-        print("depth" + str(d))
+        print("depth" + str(self.d))
         print("-------------------------------")
         return move
 
@@ -75,15 +79,21 @@ class OrderedAlphaBetaPlayer:
         # get successors
         children = self.board_manager.get_succ_moves(agent)
 
-
         # max player
         if agent == 1:
             cur_max = -float('inf')
-            # TODO how to sort the children in min player as well
-            for child in sorted(children, key=, reverse=True):
+            # TODO how to sort the children in min player as well only in
+            if depth == self.d and self.d != 1:
+                evaluated_children = list(map(lambda x: x[1], self.immediate_children))
+            else:
+                evaluated_children = children
+
+            for child in evaluated_children:
                 self.board_manager.direction = child
                 self.board_manager.update_board(1, agent, child) # 1 = step into
                 _, val_of_move = self.minimax(3 - agent, depth - 1)
+                if depth == self.d:
+                    self.immediate_children += [[val_of_move, child]]
                 self.board_manager.update_board(-1, agent, child) # -1 = step out
 
                 if val_of_move > cur_max:
@@ -100,10 +110,19 @@ class OrderedAlphaBetaPlayer:
         # min player agent == 2
         else:
             cur_min = float('inf')
-            for child in children:
+
+            if depth == self.d:
+                evaluated_children = self.immediate_children
+            else:
+                evaluated_children = children
+
+            for child in evaluated_children:
                 self.board_manager.direction = child
                 self.board_manager.update_board(1, agent, child) # 1 = step into
                 _, val_of_move = self.minimax(3 - agent, depth - 1)
+                # TODO check if should be here
+                if depth == self.d:
+                     self.immediate_children += [val_of_move, child]
                 self.board_manager.update_board(-1, agent, child)
                 if val_of_move < cur_min:
                     chosen = child
