@@ -11,7 +11,7 @@ class OrderedAlphaBetaPlayer:
         self.alpha = float("-inf")
         self.beta = float("inf")
         self.immediate_children = []
-        self.d = None
+        self.d = 0
 
     def set_game_params(self, board):
         self.board_manager = BoardManager(board)
@@ -41,6 +41,8 @@ class OrderedAlphaBetaPlayer:
         time_limit -= last_iteration_time
         while time_limit > next_evaluated_time:
         #while d < 15:
+
+            print("make move depth" + str(self.d))
             self.d += 1
             # for every d save the scores for all children of that location
             iteration_start_time = tm.time()
@@ -57,9 +59,15 @@ class OrderedAlphaBetaPlayer:
         print("leaves" + str(self.leaves))
         print("depth" + str(self.d))
         print("-------------------------------")
+        self.immediate_children = []
         return move
 
     def minimax(self, agent, depth):
+        print("~~~~~~~~minimax~~~~~~~~~~~~~~~~~~~~")
+        print("self.d: ", self.d)
+        print("depth: ", depth)
+        cur_depth = depth
+        print("cur_depth depth: ", cur_depth)
 
         chosen = (0, 0)
 
@@ -70,7 +78,7 @@ class OrderedAlphaBetaPlayer:
             return chosen, finish_state
 
         # if reached depth limit - update leaves and return the heuristic score and move
-        if depth == 0:
+        if cur_depth == 0:
             self.leaves += 1
             # gets board, and returns value of the current leaf
             evaluated_solution = self.board_manager.heuristic()
@@ -83,17 +91,19 @@ class OrderedAlphaBetaPlayer:
         if agent == 1:
             cur_max = -float('inf')
             # TODO how to sort the children in min player as well only in
-            if depth == self.d and self.d != 1:
+            if cur_depth == self.d and self.d != 1:
                 evaluated_children = list(map(lambda x: x[1], self.immediate_children))
+                self.immediate_children=[]
             else:
                 evaluated_children = children
 
             for child in evaluated_children:
                 self.board_manager.direction = child
                 self.board_manager.update_board(1, agent, child) # 1 = step into
-                _, val_of_move = self.minimax(3 - agent, depth - 1)
-                if depth == self.d:
-                    self.immediate_children += [[val_of_move, child]]
+                _, val_of_move = self.minimax(3 - agent, cur_depth - 1)
+                if cur_depth == self.d:
+                    print("1st checkpoint****************cur_depth: ", cur_depth)
+                    self.immediate_children += [(val_of_move, child)]
                 self.board_manager.update_board(-1, agent, child) # -1 = step out
 
                 if val_of_move > cur_max:
@@ -111,7 +121,7 @@ class OrderedAlphaBetaPlayer:
         else:
             cur_min = float('inf')
 
-            if depth == self.d:
+            if cur_depth == self.d:
                 evaluated_children = self.immediate_children
             else:
                 evaluated_children = children
@@ -119,9 +129,9 @@ class OrderedAlphaBetaPlayer:
             for child in evaluated_children:
                 self.board_manager.direction = child
                 self.board_manager.update_board(1, agent, child) # 1 = step into
-                _, val_of_move = self.minimax(3 - agent, depth - 1)
+                _, val_of_move = self.minimax(3 - agent, cur_depth - 1)
                 # TODO check if should be here
-                if depth == self.d:
+                if cur_depth == self.d:
                      self.immediate_children += [val_of_move, child]
                 self.board_manager.update_board(-1, agent, child)
                 if val_of_move < cur_min:
