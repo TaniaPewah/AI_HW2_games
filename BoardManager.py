@@ -74,21 +74,21 @@ class BoardManager:
 
         return 0 <= i and i < self.map.shape[0] and 0 <= j and j < self.map.shape[1] and self.map[i][j] == 0
 
-
+# i have 1 possible move, rival has none, im not moving becuse check win is True and victory, not returning the move to make  (0,1) (8,5)
     def g_check_win(self, agent):
         possible_next_locations_me = self.get_succ_moves(agent)
         possible_next_locations_rival = self.get_succ_moves(3 - agent)
         if len(possible_next_locations_me) != 0:
             if len(possible_next_locations_rival) == 0:
-                return True, self.end_game_states["victory"]
+                return True, self.end_game_states["victory"], possible_next_locations_me[0]
             else:
-                return False, self.end_game_states["continue_game"]
+                return False, self.end_game_states["continue_game"], (0,0)
         else:
             if len(possible_next_locations_rival) != 0:
-                return True, self.end_game_states["loose"]
+                return True, self.end_game_states["loose"], (0,0)
             else:
                 # TODO check who is the starting player using tile counting
-                return True, self.end_game_states["tie"]
+                return True, self.end_game_states["tie"], (0,0)
 
     def heuristic(self):
         # TODO refine the heuristic using these:

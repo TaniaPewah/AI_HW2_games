@@ -59,7 +59,7 @@ class MinimaxPlayer:
         chosen = (0, 0)
 
         # checking end of game, it is a leaf
-        game_finished, finish_state = self.board_manager.g_check_win(agent)
+        game_finished, finish_state, chosen = self.board_manager.g_check_win(agent)
         if game_finished:
             self.leaves += 1
             return chosen, finish_state

@@ -63,19 +63,21 @@ class OrderedAlphaBetaPlayer:
         return move
 
     def minimax(self, agent, depth):
-        print("~~~~~~~~minimax~~~~~~~~~~~~~~~~~~~~")
-        print("self.d: ", self.d)
-        print("depth: ", depth)
+
+        # print("self.d: ", self.d)
+        # print("depth: ", depth)
         cur_depth = depth
-        print("cur_depth depth: ", cur_depth)
+        # print("cur_depth depth: ", cur_depth)
 
         chosen = (0, 0)
 
         # checking end of game, it is a leaf
-        game_finished, finish_state = self.board_manager.g_check_win(agent)
+        # returns 100 and returns (0,0)
+        game_finished, finish_state, chosen = self.board_manager.g_check_win(agent)
         if game_finished:
             self.leaves += 1
             return chosen, finish_state
+
 
         # if reached depth limit - update leaves and return the heuristic score and move
         if cur_depth == 0:
@@ -100,9 +102,10 @@ class OrderedAlphaBetaPlayer:
             for child in evaluated_children:
                 self.board_manager.direction = child
                 self.board_manager.update_board(1, agent, child) # 1 = step into
+
                 _, val_of_move = self.minimax(3 - agent, cur_depth - 1)
                 if cur_depth == self.d:
-                    print("1st checkpoint****************cur_depth: ", cur_depth)
+                    # print("1st checkpoint****************cur_depth: ", cur_depth)
                     self.immediate_children += [(val_of_move, child)]
                 self.board_manager.update_board(-1, agent, child) # -1 = step out
 
