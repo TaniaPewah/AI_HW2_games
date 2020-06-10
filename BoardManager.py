@@ -1,3 +1,6 @@
+import numpy as np
+
+
 def add(a, b):
     return tuple(map(sum, zip(a, b)))
 
@@ -90,16 +93,55 @@ class BoardManager:
                 # TODO check who is the starting player using tile counting
                 return True, self.end_game_states["tie"], (0,0)
 
+    def get_surrounding_tiles(self, loc):
+        cnt = 0
+        for i in range(-1,1):
+            for j in range(-1,1):
+                new_loc = add(loc, (i, j))
+                if self.is_move_valid(new_loc):
+                    cnt +=1
+        return cnt
+
+    def bfs(self, node):
+
+        helper_mat = np.zeros_like(self.map.shape)
+        qu = np.deque(self.my_loc)
+
+        while qu:
+            curr_r, curr_c = qu.pop()
+            dist = helper_mat[curr_r][curr_c]
+            adj_cells = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+            for r_adj, c_adj in adj_cells:
+                adj_row = curr_r + r_adj
+                adj_col = curr_c + c_adj
+                if self.is_move_valid((adj_row, adj_col)):
+                    if helper_mat[adj_row][adj_col] == 0:
+                        if self.map[adj_row][adj_col] == 0:
+                            helper_mat[adj_row][adj_col] = dist + 1
+                            qu.appendleft((adj_row, adj_col))
+                        if self.map[adj_row][adj_col] == 2:
+                            return dist + 1
+
+
     def heuristic(self):
+        w = (0.3, 0.3, 0.4)
         # TODO refine the heuristic using these:
+
         # rival distance to our location using white tiles using BFS?
-        # board state: num of white tiles around me
+
+
         # use self.leaves
+
+        # board state: num of white tiles around me
+        surrounding_my = self.get_surrounding_tiles( self.my_loc)
+        surrounding_rival = self.get_surrounding_tiles(self.rival_loc)
+        a = surrounding_my - surrounding_rival*2
 
         possible_next_me = len(self.get_succ_moves(1))
         possible_next_rival = len(self.get_succ_moves(2))
+        b = possible_next_me - possible_next_rival*2
 
-        return possible_next_me - possible_next_rival
+        return w[0]*a +w[1]*b + w[2]*c
 
     def set_rival_loc(self, loc):
         self.map[self.rival_loc] = -1
