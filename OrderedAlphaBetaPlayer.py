@@ -40,9 +40,6 @@ class OrderedAlphaBetaPlayer:
 
         time_limit -= last_iteration_time
         while time_limit > next_evaluated_time:
-        #while d < 15:
-
-            print("make move depth" + str(self.d))
             self.d += 1
             # for every d save the scores for all children of that location
             iteration_start_time = tm.time()
@@ -54,13 +51,8 @@ class OrderedAlphaBetaPlayer:
             next_evaluated_time = self.board_manager.f(last_iteration_time, self.leaves)
 
         self.board_manager.my_loc = add(self.board_manager.my_loc, move)
-        print("alphabeta~~~~~~~~")
-        print("time: " + str(tm.time() - start))
-        print("leaves" + str(self.leaves))
-        print("depth" + str(self.d))
-        print("-------------------------------")
         self.immediate_children = []
-        return move
+        return self.d
 
     def minimax(self, agent, depth):
 

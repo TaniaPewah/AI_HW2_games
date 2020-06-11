@@ -46,13 +46,7 @@ class MinimaxPlayer:
             next_evaluated_time = self.board_manager.f(last_iteration_time, self.leaves)
 
         self.board_manager.my_loc = add(self.board_manager.my_loc, move)
-        print("minimax~~~~~~~~")
-        print("time: " + str(tm.time() - start))
-        print("leaves" + str(self.leaves))
-        print("depth" + str(d))
-        print("-------------------------------")
-
-        return move
+        return d
 
     def minimax(self, agent, depth):
 
