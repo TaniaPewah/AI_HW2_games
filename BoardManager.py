@@ -17,6 +17,7 @@ class BoardManager:
                            "left": (0, -1)}
         self.end_game_states = {"victory": 100, "loose": -100, "tie": 0, "continue_game": -2}
         self.direction = None
+        self.rival_reachable = 1
 
     def set_game(self):
         for i, row in enumerate(self.map):
@@ -109,7 +110,7 @@ class BoardManager:
         qu = queue.Queue()
         qu.put(self.my_loc)
 
-        while qu:
+        while not qu.empty():
             curr_r, curr_c = qu.get()
             dist = helper_mat[curr_r][curr_c]
             adj_cells = [(0, 1), (1, 0), (0, -1), (-1, 0)]
@@ -117,32 +118,45 @@ class BoardManager:
                 adj_row = curr_r + r_adj
                 adj_col = curr_c + c_adj
                 if 0 <= adj_row < self.map.shape[0] and 0 <= adj_col < self.map.shape[1]:
+                    # check whether the tile is white and not visited
                     if helper_mat[adj_row][adj_col] == 0 and self.map[adj_row][adj_col] == 0:
                             helper_mat[adj_row][adj_col] = dist + 1
                             qu.put((adj_row, adj_col))
+                    # check whther the tile is rival
                     elif self.map[adj_row][adj_col] == 2:
                         return dist + 1
+
+        self.rival_reachable = 0
+        return float("inf")
+
+        # TODO when rival is unreachable return -inf
 
 
     def heuristic(self):
         w = (0.3, 0.3, 0.4)
         # TODO refine the heuristic using these:
 
-        # rival distance to our location using white tiles using BFS?
+        # if we are second player how to know that check symetry reverse sideways reverse updown to conclude
 
-        distance_to_rival = self.bfs()
+        # rival distance to our location using white tiles using BFS?
+        if self.rival_reachable:
+            distance_to_rival = self.bfs()
+        else:
+            distance_to_rival = float("inf")
+
+            
         # use self.leaves
 
         # board state: num of white tiles around me
         surrounding_my = self.get_surrounding_tiles( self.my_loc)
         surrounding_rival = self.get_surrounding_tiles(self.rival_loc)
-        a = surrounding_my - surrounding_rival*2
+        surrounding_area = surrounding_my - surrounding_rival*2
 
         possible_next_me = len(self.get_succ_moves(1))
         possible_next_rival = len(self.get_succ_moves(2))
-        b = possible_next_me - possible_next_rival*2
+        possible_moves_diff = possible_next_me - possible_next_rival*2
 
-        return w[0]*a +w[1]*b
+        return w[0]*surrounding_area + w[1]*possible_moves_diff + w[2]*distance_to_rival
 
     def set_rival_loc(self, loc):
         self.map[self.rival_loc] = -1
