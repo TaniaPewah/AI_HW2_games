@@ -15,15 +15,6 @@ class AlphaBetaPlayer:
         self.board_manager = BoardManager(board)
         self.board_manager.set_game()
 
-    # TODO maybe not use f and use real time threshold instead
-    def f(self, prev_time):
-        total_nodes = self.leaves * 1.5
-        time_for_node = prev_time / total_nodes
-        extra_leaves = self.leaves * 3
-        extra_time = extra_leaves * time_for_node
-        total_time = prev_time + extra_time
-        return total_time
-
     def make_move(self, time_limit): #number of seconds to finish
         # TODO take care of time calculation
         d = 1
@@ -53,7 +44,7 @@ class AlphaBetaPlayer:
         # print("leaves" + str(self.leaves))
         # print("depth" + str(d))
         # print("-------------------------------")
-        return d
+        return move
 
     def minimax(self, agent, depth):
 

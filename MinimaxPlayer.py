@@ -8,49 +8,55 @@ class MinimaxPlayer:
         self.directions = [(1, 0), (0, 1), (-1, 0), (0, -1)]
         self.board_manager = None
         self.leaves = 0
+        self.threshold = 0.2
+        self.time_limit = None
+        self.move = None
+        self.times_up = 0
+        self.first_player = 0
 
     def set_game_params(self, board):
         self.board_manager = BoardManager(board)
         self.board_manager.set_game()
 
-    # TODO maybe not use f and use real time threshold instead
-    def f(self, prev_time):
-        total_nodes = self.leaves * 1.5
-        time_for_node = prev_time / total_nodes
-        extra_leaves = self.leaves * 3
-        extra_time = extra_leaves * time_for_node
-        total_time = prev_time + extra_time
-        return total_time
 
     def make_move(self, time_limit): #number of seconds to finish
+
+        if not self.first_player:
+            self.first_player = 1
+
+        print( "first player: ", str(self.first_player))
         # TODO take care of time calculation
         d = 1
-        iteration_start_time = tm.time()
-        start = tm.time() #debug
-        move, score = self.minimax(1, d)
-        if move == (0, 0):
+
+        self.start_move_time = tm.time()
+        self.time_limit = time_limit
+        self.move, score = self.minimax(1, d)
+        if self.move == (0, 0):
             return (0, 0)
 
-        last_iteration_time = tm.time() - iteration_start_time
-        next_evaluated_time = self.board_manager.f(last_iteration_time, self.leaves)
-
-        time_limit -= last_iteration_time
-        while time_limit > next_evaluated_time:
-        #while d < 15:
+        #next_evaluated_time = self.board_manager.f(last_iteration_time, self.leaves)
+        time = tm.time()
+        while time - self.start_move_time < self.time_limit - self.threshold:
             d += 1
-            iteration_start_time = tm.time()
             move, score = self.minimax(1, d)
+            if not self.times_up:
+                self.move = move
+            time = tm.time()
 
-            last_iteration_time = tm.time() - iteration_start_time
-            time_limit -= last_iteration_time
-            next_evaluated_time = self.board_manager.f(last_iteration_time, self.leaves)
-
-        self.board_manager.my_loc = add(self.board_manager.my_loc, move)
-        return d
+        self.board_manager.my_loc = add(self.board_manager.my_loc, self.move)
+        return self.move
 
     def minimax(self, agent, depth):
 
         chosen = (0, 0)
+
+        time = tm.time()
+        if (time - self.start_move_time) > (self.time_limit - self.threshold):
+            self.times_up = True
+            if agent == 1:
+                return self.move, float('inf')
+            else:
+                return self.move, -float('inf')
 
         # checking end of game, it is a leaf
         game_finished, finish_state, chosen = self.board_manager.g_check_win(agent)
@@ -74,7 +80,7 @@ class MinimaxPlayer:
             for child in children:
                 self.board_manager.direction = child
                 self.board_manager.update_board(1, agent, child) # 1 = step into
-                _, val_of_move = self.minimax(3 - agent, depth - 1)
+                _, val_of_move = self.minimax(3 - agent, depth - 1, )
                 self.board_manager.update_board(-1, agent, child) # -1 = step out
                 if val_of_move > cur_max:
                     chosen = child
@@ -95,4 +101,6 @@ class MinimaxPlayer:
             return chosen, cur_min
 
     def set_rival_move(self, loc):
+        if not self.first_player:
+            self.first_player = 2
         self.board_manager.set_rival_loc(loc)
