@@ -1,4 +1,5 @@
 import numpy as np
+import queue
 
 
 def add(a, b):
@@ -102,25 +103,25 @@ class BoardManager:
                     cnt +=1
         return cnt
 
-    def bfs(self, node):
+    def bfs(self):
 
-        helper_mat = np.zeros_like(self.map.shape)
-        qu = np.deque(self.my_loc)
+        helper_mat = np.zeros_like(self.map)
+        qu = queue.Queue()
+        qu.put(self.my_loc)
 
         while qu:
-            curr_r, curr_c = qu.pop()
+            curr_r, curr_c = qu.get()
             dist = helper_mat[curr_r][curr_c]
             adj_cells = [(0, 1), (1, 0), (0, -1), (-1, 0)]
             for r_adj, c_adj in adj_cells:
                 adj_row = curr_r + r_adj
                 adj_col = curr_c + c_adj
-                if self.is_move_valid((adj_row, adj_col)):
-                    if helper_mat[adj_row][adj_col] == 0:
-                        if self.map[adj_row][adj_col] == 0:
+                if 0 <= adj_row < self.map.shape[0] and 0 <= adj_col < self.map.shape[1]:
+                    if helper_mat[adj_row][adj_col] == 0 and self.map[adj_row][adj_col] == 0:
                             helper_mat[adj_row][adj_col] = dist + 1
-                            qu.appendleft((adj_row, adj_col))
-                        if self.map[adj_row][adj_col] == 2:
-                            return dist + 1
+                            qu.put((adj_row, adj_col))
+                    elif self.map[adj_row][adj_col] == 2:
+                        return dist + 1
 
 
     def heuristic(self):
@@ -129,7 +130,7 @@ class BoardManager:
 
         # rival distance to our location using white tiles using BFS?
 
-
+        distance_to_rival = self.bfs()
         # use self.leaves
 
         # board state: num of white tiles around me
@@ -141,7 +142,7 @@ class BoardManager:
         possible_next_rival = len(self.get_succ_moves(2))
         b = possible_next_me - possible_next_rival*2
 
-        return w[0]*a +w[1]*b + w[2]*c
+        return w[0]*a +w[1]*b
 
     def set_rival_loc(self, loc):
         self.map[self.rival_loc] = -1
